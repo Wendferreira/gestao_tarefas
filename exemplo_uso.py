@@ -50,7 +50,7 @@ def main():
 
     print(f"\n5. Estatísticas:")
     total = len(todas_tarefas)
-    concluidas = sum(1 for t in tarefas if t["concluida"])
+    concluidas = sum(1 for t in todas_tarefas if t["concluida"])
     pendentes = total - concluidas
     print(f"   Total: {total}")
     print(f"   Concluídas: {concluidas}")

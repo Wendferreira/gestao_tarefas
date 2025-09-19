@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 import json
+import os
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 
@@ -50,7 +51,11 @@ class Task(Base):
         }
 
 
-DB_URL = "sqlite:///tarefas.db"
+# A URL do banco de dados é lida da variável de ambiente `DATABASE_URL`.
+# Se não estiver definida, usa o SQLite local como fallback.
+DB_URL = os.environ.get("DATABASE_URL", "sqlite:///tarefas.db").replace(
+    "postgres://", "postgresql://"
+)
 engine = create_engine(DB_URL, echo=False, future=True)
 SessionLocal = sessionmaker(
     bind=engine, class_=Session, expire_on_commit=False, future=True
@@ -239,7 +244,9 @@ def remover_tarefa(tarefa_id):
         if task:
             session.delete(task)
             session.commit()
-    flash("Tarefa removida com sucesso!", "success")
+            flash("Tarefa removida com sucesso!", "success")
+        else:
+            flash("Tarefa não encontrada!", "error")
     return redirect(url_for("index"))
 
 
@@ -303,4 +310,4 @@ init_db()
 migrate_from_json_if_needed()
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

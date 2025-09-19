@@ -105,12 +105,21 @@
                                                     %}Baixa{% endif %}
                                                 </small>
                                             </div>
+                                            <small class="text-muted me-3" style="font-size: 0.8em;">Atualizado em: {{
+                                                tarefa.updated_at.split('T')[0] }}</small>
                                             <div class="btn-group" role="group">
                                                 {% if not tarefa.concluida %}
                                                 <a href="{{ url_for('completar_tarefa_web', tarefa_id=tarefa.id) }}"
                                                     class="btn btn-success btn-sm" title="Marcar como concluída">
                                                     <i class="fas fa-check"></i>
                                                 </a>
+                                                <button type="button" class="btn btn-warning btn-sm"
+                                                    title="Editar tarefa" data-bs-toggle="modal"
+                                                    data-bs-target="#editModal" data-task-id="{{ tarefa.id }}"
+                                                    data-task-text="{{ tarefa.texto }}"
+                                                    data-task-priority="{{ tarefa.prioridade }}">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
                                                 {% endif %}
                                                 <a href="{{ url_for('remover_tarefa', tarefa_id=tarefa.id) }}"
                                                     class="btn btn-danger btn-sm" title="Remover tarefa"
@@ -165,7 +174,56 @@
         </div>
     </div>
 
+    <!-- Modal de Edição -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="editForm" method="POST" action="">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editModalLabel">Editar Tarefa</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="editText" class="form-label">Texto da Tarefa</label>
+                            <input type="text" class="form-control" id="editText" name="texto" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editPriority" class="form-label">Prioridade</label>
+                            <select id="editPriority" name="prioridade" class="form-select">
+                                <option value="2">Alta</option>
+                                <option value="1">Média</option>
+                                <option value="0">Baixa</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const editModal = document.getElementById('editModal');
+        editModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const taskId = button.getAttribute('data-task-id');
+            const taskText = button.getAttribute('data-task-text');
+            const taskPriority = button.getAttribute('data-task-priority');
+
+            const modalForm = editModal.querySelector('#editForm');
+            const modalText = editModal.querySelector('#editText');
+            const modalPriority = editModal.querySelector('#editPriority');
+
+            modalForm.action = `/editar/${taskId}`;
+            modalText.value = taskText;
+            modalPriority.value = taskPriority;
+        });
+    </script>
 </body>
 
 </html>
