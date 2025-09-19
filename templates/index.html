@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão de Tarefas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .tarefa-concluida {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .card {
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h1 class="h3 mb-0">
+                            <i class="fas fa-tasks me-2"></i>
+                            Sistema de Gestão de Tarefas
+                        </h1>
+                    </div>
+                    <div class="card-body">
+                        <!-- Mensagens Flash -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show"
+                            role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                        {% endwith %}
+
+                        <!-- Formulário para adicionar tarefa -->
+                        <form method="POST" action="{{ url_for('adicionar_tarefa_web') }}" class="mb-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <input type="text" name="texto" class="form-control" placeholder="Texto da tarefa"
+                                        required>
+                                </div>
+                                <div class="col-md-3">
+                                    <select name="prioridade" class="form-select" aria-label="Prioridade">
+                                        <option value="2">Alta</option>
+                                        <option value="1" selected>Média</option>
+                                        <option value="0">Baixa</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-plus me-1"></i>
+                                        Adicionar Tarefa
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <!-- Lista de tarefas -->
+                        <div class="row">
+                            {% if tarefas %}
+                            {% for tarefa in tarefas %}
+                            <div class="col-12 mb-3">
+                                <div class="card {{ 'border-success' if tarefa.concluida else 'border-primary' }}">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="flex-grow-1">
+                                                <h5
+                                                    class="card-title {{ 'tarefa-concluida' if tarefa.concluida else '' }}">
+                                                    {{ tarefa.texto }}
+                                                    {% set p = tarefa.prioridade if tarefa.prioridade is defined else 1
+                                                    %}
+                                                    {% if p == 2 %}
+                                                    <span class="badge bg-danger ms-2">Alta</span>
+                                                    {% elif p == 1 %}
+                                                    <span class="badge bg-warning text-dark ms-2">Média</span>
+                                                    {% else %}
+                                                    <span class="badge bg-secondary ms-2">Baixa</span>
+                                                    {% endif %}
+                                                </h5>
+                                                <small class="text-muted">
+                                                    ID: {{ tarefa.id }} |
+                                                    Status:
+                                                    {% if tarefa.concluida %}
+                                                    <span class="text-success">Concluída</span>
+                                                    {% else %}
+                                                    <span class="text-warning">Pendente</span>
+                                                    {% endif %}
+                                                    | Prioridade: {% if p == 2 %}Alta{% elif p == 1 %}Média{% else
+                                                    %}Baixa{% endif %}
+                                                </small>
+                                            </div>
+                                            <div class="btn-group" role="group">
+                                                {% if not tarefa.concluida %}
+                                                <a href="{{ url_for('completar_tarefa_web', tarefa_id=tarefa.id) }}"
+                                                    class="btn btn-success btn-sm" title="Marcar como concluída">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                                {% endif %}
+                                                <a href="{{ url_for('remover_tarefa', tarefa_id=tarefa.id) }}"
+                                                    class="btn btn-danger btn-sm" title="Remover tarefa"
+                                                    onclick="return confirm('Tem certeza que deseja remover esta tarefa?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="col-12 text-center py-5">
+                                <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                                <h4 class="text-muted">Nenhuma tarefa cadastrada</h4>
+                                <p class="text-muted">Adicione sua primeira tarefa usando o formulário acima.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Estatísticas -->
+                        {% if tarefas %}
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <h5 class="text-primary">{{ tarefas|length }}</h5>
+                                                <small class="text-muted">Total de Tarefas</small>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <h5 class="text-warning">{{ tarefas|selectattr('concluida', 'equalto',
+                                                    false)|list|length }}</h5>
+                                                <small class="text-muted">Pendentes</small>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <h5 class="text-success">{{ tarefas|selectattr('concluida', 'equalto',
+                                                    true)|list|length }}</h5>
+                                                <small class="text-muted">Concluídas</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
