@@ -5,10 +5,10 @@ Primeira versão funcional do projeto Gestão de Tarefas.
 ### Destaques
 - Aplicativo Flask básico com rotas de interface e API
 - Lista global de tarefas com ID incremental
-- Funções utilitárias: `adicionar_tarefa(texto, prioridade)` e `completar_tarefa(id)`
+- Funções utilitárias: `adicionar_tarefa(texto, prioridade)`, `completar_tarefa(id)` e `get_all_tasks()`
 - Campo de prioridade (0=Baixa, 1=Média, 2=Alta)
 - Ordenação: pendentes primeiro, depois concluídas; dentro do grupo: Alta > Média > Baixa; e mais recentes primeiro
-- Persistência em `tarefas.json` (carregamento na inicialização e salvamento após operações)
+- Persistência de dados com SQLite e SQLAlchemy (com migração inicial de `tarefas.json` se existir)
 - UI responsiva com Bootstrap e badges de prioridade
 - Exemplo de uso em `exemplo_uso.py`
 
@@ -23,5 +23,5 @@ Primeira versão funcional do projeto Gestão de Tarefas.
 - `POST /api/completar/<id>` — completa via API
 
 ### Infra
-- `.gitignore` com `venv/`, caches e `tarefas.json`
+- `.gitignore` com `venv/`, caches e `tarefas.json`, `tarefas.db`
 - GitHub Actions: lint (flake8) e smoke test de import

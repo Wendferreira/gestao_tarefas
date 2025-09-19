@@ -4,11 +4,15 @@ Exemplo de uso das funções adicionar_tarefa() e completar_tarefa()
 """
 
 # Importar as funções do app.py
-from app import adicionar_tarefa, completar_tarefa, tarefas
+from app import adicionar_tarefa, completar_tarefa, get_all_tasks, init_db, migrate_from_json_if_needed
 
 
 def main():
     print("=== Exemplo de uso das funções de tarefas ===\n")
+
+    # Inicializar o banco de dados e migrar dados se necessário
+    init_db()
+    migrate_from_json_if_needed()
 
     # Adicionar algumas tarefas
     print("1. Adicionando tarefas...")
@@ -22,7 +26,7 @@ def main():
     print(f"   Tarefa adicionada: {tarefa3}")
 
     print(f"\n2. Lista atual de tarefas:")
-    for tarefa in tarefas:
+    for tarefa in get_all_tasks():
         status = "✓ Concluída" if tarefa["concluida"] else "○ Pendente"
         print(f"   ID {tarefa['id']}: {tarefa['texto']} - {status}")
 
@@ -39,12 +43,13 @@ def main():
     print(f"   Completar tarefa ID 999: {'Sucesso' if resultado3 else 'Falha'}")
 
     print(f"\n4. Lista final de tarefas:")
-    for tarefa in tarefas:
+    todas_tarefas = get_all_tasks()
+    for tarefa in todas_tarefas:
         status = "✓ Concluída" if tarefa["concluida"] else "○ Pendente"
         print(f"   ID {tarefa['id']}: {tarefa['texto']} - {status}")
 
     print(f"\n5. Estatísticas:")
-    total = len(tarefas)
+    total = len(todas_tarefas)
     concluidas = sum(1 for t in tarefas if t["concluida"])
     pendentes = total - concluidas
     print(f"   Total: {total}")
